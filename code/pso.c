@@ -207,8 +207,8 @@ void inform_random(int *comm, double **pos_nb,
 
 
 //==============================================================
-// create pso settings
-pso_settings_t *pso_settings_new(int dim, double range_lo, double range_hi) {
+// create pso settings 更改了range_lo range_hi 改为接受数组
+pso_settings_t *pso_settings_new(int dim, double* range_lo, double* range_hi) {
     pso_settings_t *settings = (pso_settings_t *)malloc(sizeof(pso_settings_t));
     if (settings == NULL) { return NULL; }
 
@@ -224,14 +224,14 @@ pso_settings_t *pso_settings_new(int dim, double range_lo, double range_hi) {
     if (settings->range_hi == NULL) { free(settings); free(settings->range_lo); return NULL; }
 
     for (int i=0; i<settings->dim; i++) {
-        settings->range_lo[i] = range_lo;
-        settings->range_hi[i] = range_hi;
+        settings->range_lo[i] = range_lo[i];
+        settings->range_hi[i] = range_hi[i];
     }
 
     settings->size = pso_calc_swarm_size(settings->dim);
-    settings->print_every = 1000;
-    settings->steps = 100000;
-    settings->c1 = 1.496;
+    settings->print_every = 50; //这里需要更改
+    settings->steps = 500;
+    settings->c1 = 1.496;   //setting explaination in pso2007
     settings->c2 = 1.496;
     settings->w_max = PSO_INERTIA;
     settings->w_min = 0.3;
@@ -306,6 +306,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
         case PSO_NHOOD_GLOBAL:
             // comm matrix not used
             inform_fun = inform_global;
+            printf("choose global topology\n");
             break;
         case PSO_NHOOD_RING:
             init_comm_ring(comm, settings);
@@ -329,6 +330,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
             /*     break; */
         case PSO_W_LIN_DEC :
             calc_inertia_fun = calc_inertia_lin_dec;
+            printf("choose inertia_lin_dec\n");
             break;
         }
 
@@ -354,6 +356,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
         }
         // update particle fitness
         fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
+        printf("initia particle %d fit: %lf\n", i, fit[i]);
         fit_b[i] = fit[i]; // this is also the personal best
         // update gbest??
         if (fit[i] < solution->error) {

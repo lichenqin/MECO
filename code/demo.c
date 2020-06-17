@@ -25,34 +25,52 @@
 #include <stdio.h> // for printf
 #include "pso.h"
 
+//define boolean for c
+#ifndef BOOLEAN
+#define BOOLEAN
+
+typedef enum {true, false} boolean;
+
+#endif
+
 //==============================================================
 //           Prameteres Of Mobile Edge Computing
 //==============================================================
 
-
-double Wu=pow(10,7);
+double Wu;
 double Wd=10;
 double d=10;
 double h1=0.99;
 double h2=0.99;
-double N0=174*pow(10,-13);
+double N0;
 double P0=0.4;
 double kt=18;
 double Pr=0.4;
 double PF=0.1;
 double Ptmax=0.1;
-double fc=8*pow(10,8);
-double fImax=4*pow(10,8);
-double k=pow(10,-26);
+double fc;
+double fImax;
+double K;
 double alpha=40;
 double I=10*1024*1024*8;
 double v=4;
 double Lmax=4.5;
 double beta1=1;
 double beta2=0.2;
-double F=6*pow(10,9);
-double Ru=Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
-double Rd=Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
+double F;
+double Ru;
+double Rd;
+
+void initiate(){
+    Wu = pow(10,7);
+    N0 = 174*pow(10,-13);
+    fc = 8*pow(10,8);
+    fImax = 4*pow(10,8);
+    K = pow(10,-26);
+    F = 6*pow(10,9);
+    Ru = Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
+    Rd = Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
+}
 
 //==============================================================
 //                  BENCHMARK FUNCTIONS
@@ -101,8 +119,8 @@ double pso_griewank(double *vec, int dim, void *params) {
 //              Consuption Functions about Energe
 //==============================================================
 
-//公式4
-bool L(double *pos)
+//公式4 约束条件
+boolean L(double *pos)
 {
 	double tl,tc,tu,td,tlc;
 	double fl=pos[0];
@@ -121,8 +139,8 @@ bool L(double *pos)
 		return false;
 }
 
-//公式11
-bool f(double *pos)
+//公式11 约束条件
+boolean f(double *pos)
 {
     double lamda=pos[2];
     double f=I*(1-lamda)*alpha;
@@ -146,56 +164,100 @@ double pso_E(double *vec, int dim, void *params) {
 
 //==============================================================
 
-int main(int argc, char **argv) {
+// int main(int argc, char **argv) {
+
+//     pso_settings_t *settings = NULL;
+//     pso_obj_fun_t obj_fun = NULL;
+
+//     // parse command line argument (function name)
+//     if (argc == 2) {
+//         if (strcmp(argv[1], "rosenbrock") == 0) {
+//             obj_fun = pso_rosenbrock;
+//             settings = pso_settings_new(30, -2.048, 2.048);
+//             printf("Optimizing function: rosenbrock (dim=%d, swarm size=%d)\n",
+//                    settings->dim, settings->size);
+//         } else if (strcmp(argv[1], "griewank") == 0) {
+//             obj_fun = pso_griewank;
+//             settings = pso_settings_new(30, -600, 600);
+//             printf("Optimizing function: griewank (dim=%d, swarm size=%d)\n",
+//                    settings->dim, settings->size);
+//         } else if (strcmp(argv[1], "sphere") == 0) {
+//             obj_fun = pso_sphere;
+//             settings = pso_settings_new(30, -100, 100);
+//             printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n",
+//                    settings->dim, settings->size);
+//         } else {
+//             printf("Unsupported objective function: %s", argv[1]);
+//             return 1;
+//         }
+//     } else if (argc > 2) {
+//         printf("Usage: demo [PROBLEM], where problem is optional with values [sphere|rosenbrock|griewank]\n ");
+//         return 1;
+//     }
+
+//     // handle the default case (no argument given)
+//     if (obj_fun == NULL || settings == NULL) {
+//         obj_fun = pso_sphere;
+//         settings = pso_settings_new(30, -100, 100);
+//         printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n",
+//                    settings->dim, settings->size);
+//     }
+
+//     // set some general PSO settings
+//     settings->goal = 1e-5;
+//     settings->size = 30;
+//     settings->nhood_strategy = PSO_NHOOD_RING;
+//     settings->nhood_size = 10;
+//     settings->w_strategy = PSO_W_LIN_DEC;
+
+//     // initialize GBEST solution
+//     pso_result_t solution;
+//     // allocate memory for the best position buffer
+//     solution.gbest = (double *)malloc(settings->dim * sizeof(double));
+
+//     // run optimization algorithm
+//     pso_solve(obj_fun, NULL, &solution, settings);
+
+//     // free the gbest buffer
+//     free(solution.gbest);
+
+//     // free the settings
+//     pso_settings_free(settings);
+
+//     return 0;
+
+// }
+
+int main( int argc, char** argv){
 
     pso_settings_t *settings = NULL;
     pso_obj_fun_t obj_fun = NULL;
 
-    // parse command line argument (function name)
-    if (argc == 2) {
-        if (strcmp(argv[1], "rosenbrock") == 0) {
-            obj_fun = pso_rosenbrock;
-            settings = pso_settings_new(30, -2.048, 2.048);
-            printf("Optimizing function: rosenbrock (dim=%d, swarm size=%d)\n",
-                   settings->dim, settings->size);
-        } else if (strcmp(argv[1], "griewank") == 0) {
-            obj_fun = pso_griewank;
-            settings = pso_settings_new(30, -600, 600);
-            printf("Optimizing function: griewank (dim=%d, swarm size=%d)\n",
-                   settings->dim, settings->size);
-        } else if (strcmp(argv[1], "sphere") == 0) {
-            obj_fun = pso_sphere;
-            settings = pso_settings_new(30, -100, 100);
-            printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n",
-                   settings->dim, settings->size);
-        } else {
-            printf("Unsupported objective function: %s", argv[1]);
-            return 1;
-        }
-    } else if (argc > 2) {
-        printf("Usage: demo [PROBLEM], where problem is optional with values [sphere|rosenbrock|griewank]\n ");
-        return 1;
-    }
+    initiate();//初始化变量
 
-    // handle the default case (no argument given)
-    if (obj_fun == NULL || settings == NULL) {
-        obj_fun = pso_sphere;
-        settings = pso_settings_new(30, -100, 100);
-        printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n",
-                   settings->dim, settings->size);
-    }
+    obj_fun = pso_E;//定义被优化函数为耗能函数
+
+    double range_lo[3] = {0, 0, 0};
+    double range_hi[3] = {1, 1, 1};//先设置为很小的值
+
+    settings = pso_settings_new(3, range_lo, range_hi);//dim: 3 
+    printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n", settings->dim, settings->size);
 
     // set some general PSO settings
     settings->goal = 1e-5;
-    settings->size = 30;
-    settings->nhood_strategy = PSO_NHOOD_RING;
-    settings->nhood_size = 10;
+    settings->size = 30;    //swarm size: 30
+    settings->nhood_strategy = PSO_NHOOD_GLOBAL;  //using global topology
+    settings->nhood_size = 10;  //choose 10 neighbors
     settings->w_strategy = PSO_W_LIN_DEC;
+
+    printf("====Setting part accomplishes====\n\n");
 
     // initialize GBEST solution
     pso_result_t solution;
     // allocate memory for the best position buffer
     solution.gbest = (double *)malloc(settings->dim * sizeof(double));
+
+    printf("====Initializing part accomplishes====\n\n");
 
     // run optimization algorithm
     pso_solve(obj_fun, NULL, &solution, settings);
@@ -205,7 +267,5 @@ int main(int argc, char **argv) {
 
     // free the settings
     pso_settings_free(settings);
-
     return 0;
-
 }
