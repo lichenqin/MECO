@@ -22,16 +22,11 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h> // for printf
+#include <stdio.h> // for file output
 #include "pso.h"
 
-//define boolean for c
-#ifndef BOOLEAN
-#define BOOLEAN
-
-typedef enum {true, false} boolean;
-
-#endif
+//Output data file
+//FILE * output = NULL;
 
 //==============================================================
 //           Prameteres Of Mobile Edge Computing
@@ -39,7 +34,7 @@ typedef enum {true, false} boolean;
 
 double Wu;
 double Wd;
-double d=10;
+double d=10;    //d可能改变 10,20,30,...,100
 double h1=0.99;
 double h2=0.99;
 double N0;
@@ -54,7 +49,7 @@ double K;
 double alpha=40;
 double I=10*1024*1024*8;
 double v=4;
-double Lmax=4.5;
+double Lmax=4.5;    //Lmax可能改变 1.5, 2, ... 4.5
 double beta1=1;
 double beta2=0.2;
 double F;
@@ -139,7 +134,7 @@ int L(double *pos)
 	td = beta2*(1 - lamda)*I/Rd;
 	tlc = alpha*(1 - lamda)*I/fc;
 	tc = tu + td + tlc;
-    printf("tl: %.6f\ntc: %.6f\n", tl, tc);
+    //printf("tl: %.6f\ntc: %.6f\n", tl, tc);
 	if (tl <= Lmax && tc <= Lmax)
 		return 1;
 	else
@@ -151,7 +146,7 @@ int f(double *pos)
 {
     double lamda=pos[2];
     double f=I*(1-lamda)*alpha;
-    printf("f: %.6f\n", f);
+    //printf("f: %.6f\n", f);
 	if (f <= F)
 		return 1;
 	else
@@ -240,6 +235,11 @@ double pso_E(double *vec, int dim, void *params) {
 
 int main( int argc, char** argv){
 
+    if(argc !=2 ){
+        printf("Usage %s <filename>\n",argv[1]);
+        exit(1);
+    }
+
     pso_settings_t *settings = NULL;
     pso_obj_fun_t obj_fun = NULL;
 
@@ -247,7 +247,12 @@ int main( int argc, char** argv){
     pso_obj_judge obj_L = NULL;
     pso_obj_judge obj_f = NULL;
 
+    //获取 d 和 lmax
+    printf("input d and Lmax:");
+    scanf("%lf %lf",&d ,&Lmax);
+
     initiate();//初始化变量
+    double result[500] = {0.0};
 
     obj_fun = pso_E;//定义被优化函数为耗能函数
     
@@ -277,12 +282,30 @@ int main( int argc, char** argv){
     printf("====Initializing part accomplishes====\n\n");
 
     // run optimization algorithm
-    pso_solve(obj_fun, NULL, &solution, settings, L, f);
+    pso_solve(obj_fun, NULL, &solution, settings, L, f, result);
+
+    printf("====Solution Best====\n");
+    for(int i = 0; i < 500; i++)
+        printf("%.5lf\n",result[i]);
 
     // free the gbest buffer
     free(solution.gbest);
 
     // free the settings
     pso_settings_free(settings);
+
+    //open file
+    FILE * out = fopen(argv[1],"wb");
+    if( out == NULL ){
+        printf("Can't open this file.\n");
+        exit(1);
+    }
+    
+    for(int i = 0; i < 500; i++)
+        fprintf(out,"%.5lf\n",result[i]);
+    
+    //close file handle
+    fclose(out);
+
     return 0;
 }

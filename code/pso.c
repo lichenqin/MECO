@@ -275,7 +275,8 @@ void pso_matrix_free(double **m, int size) {
 //==============================================================
 void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
 	       pso_result_t *solution, pso_settings_t *settings,
-           pso_obj_judge L, pso_obj_judge f)
+           pso_obj_judge L, pso_obj_judge f,
+           double * array)
 {
     // Particles
     double **pos = pso_matrix_new(settings->size, settings->dim); // position matrix
@@ -309,7 +310,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
         case PSO_NHOOD_GLOBAL:
             // comm matrix not used
             inform_fun = inform_global;
-            printf("choose global topology\n");
+            //printf("choose global topology\n");
             break;
         case PSO_NHOOD_RING:
             init_comm_ring(comm, settings);
@@ -333,7 +334,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
             /*     break; */
         case PSO_W_LIN_DEC :
             calc_inertia_fun = calc_inertia_lin_dec;
-            printf("choose inertia_lin_dec\n");
+            //printf("choose inertia_lin_dec\n");
             break;
         }
 
@@ -380,6 +381,8 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
 
     // RUN ALGORITHM 进入循环
     for (step=0; step<settings->steps; step++) {
+
+        array[step] = solution->error;
         // update current step
         settings->step = step;
         // update inertia weight
@@ -441,8 +444,15 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
 
             }
 
+            if( L(pos[i])==0 || f(pos[i])== 0 ){
+                //do nothing
+                //这样计算出来的fit[i]应该不会存在越值情况
+            }
+            else{
+                fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
+            }
             // update particle fitness 加入约束函数
-            fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
+            
             // update personal best position?
             if (fit[i] < fit_b[i]) {
                 fit_b[i] = fit[i];
