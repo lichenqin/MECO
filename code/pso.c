@@ -274,7 +274,8 @@ void pso_matrix_free(double **m, int size) {
 //                     PSO ALGORITHM
 //==============================================================
 void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
-	       pso_result_t *solution, pso_settings_t *settings)
+	       pso_result_t *solution, pso_settings_t *settings,
+           pso_obj_judge L, pso_obj_judge f)
 {
     // Particles
     double **pos = pso_matrix_new(settings->size, settings->dim); // position matrix
@@ -336,7 +337,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
             break;
         }
 
-    // INITIALIZE SOLUTION
+    // INITIALIZE SOLUTION 加入约束函数
     solution->error = DBL_MAX;
 
     // SWARM INITIALIZATION
@@ -356,7 +357,13 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
             // initialize velocity
             vel[i][d] = (a-b) / 2.;
         }
-        // update particle fitness
+        // update particle fitness 如果不符合约束函数 则上面的生成过程无效
+        if( L(pos[i])==0 || f(pos[i])== 0 ){
+            i = i-1;
+            continue;
+            //这样计算出来的fit[i]应该不会存在越值情况
+        }
+
         fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
         printf("initial particle %d fit: %lf\n", i, fit[i]);
         fit_b[i] = fit[i]; // this is also the personal best
@@ -371,7 +378,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
 
     }
 
-    // RUN ALGORITHM
+    // RUN ALGORITHM 进入循环
     for (step=0; step<settings->steps; step++) {
         // update current step
         settings->step = step;
@@ -434,7 +441,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
 
             }
 
-            // update particle fitness
+            // update particle fitness 加入约束函数
             fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
             // update personal best position?
             if (fit[i] < fit_b[i]) {

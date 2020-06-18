@@ -57,7 +57,8 @@ typedef struct {
 // OBJECTIVE FUNCTION TYPE
 typedef double (*pso_obj_fun_t)(double *, int, void *);
 
-
+//定义判定函数
+typedef int (*pso_obj_judge)(double *);
 
 // PSO SETTINGS
 typedef struct {
@@ -94,6 +95,8 @@ int pso_calc_swarm_size(int dim);
 // minimize the provided obj_fun using PSO with the specified settings
 // and store the result in *solution
 void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
-	       pso_result_t *solution, pso_settings_t *settings);
+	       pso_result_t *solution, pso_settings_t *settings,
+           pso_obj_judge L, pso_obj_judge f);
+
 
 #endif // PSO_H_

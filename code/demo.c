@@ -126,34 +126,36 @@ double pso_griewank(double *vec, int dim, void *params) {
 //==============================================================
 
 //公式4 约束条件
-boolean L(double *pos)
+int L(double *pos)
 {
 	double tl,tc,tu,td,tlc;
 	double fl=pos[0];
     double Pt=pos[1];
     double lamda=pos[2];
-    double Ru=Wu*((log(1+(Pt*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));;
+    double Ru=Wu*((log(1+(Pt*pow(d,-v)*pow(fabs(h2),2))/N0))/log(2));
     
 	tl = alpha*lamda*I/fl;
     tu = beta1*(1 - lamda)*I/Ru;
 	td = beta2*(1 - lamda)*I/Rd;
 	tlc = alpha*(1 - lamda)*I/fc;
 	tc = tu + td + tlc;
+    printf("tl: %.6f\ntc: %.6f\n", tl, tc);
 	if (tl <= Lmax && tc <= Lmax)
-		return true;
+		return 1;
 	else
-		return false;
+		return 0;
 }
 
 //公式11 约束条件
-boolean f(double *pos)
+int f(double *pos)
 {
     double lamda=pos[2];
     double f=I*(1-lamda)*alpha;
+    printf("f: %.6f\n", f);
 	if (f <= F)
-		return true;
+		return 1;
 	else
-		return false;
+		return 0;
 }
 
 //耗能方程
@@ -166,7 +168,7 @@ double pso_E(double *vec, int dim, void *params) {
     double E = alpha*I*K*lamda*pow(fl,2)+(P0+kt*Pt)*(beta1*(1-lamda)*I)/Ru+Pr*beta2*(1-lamda)/Rd;
 
     //printf("fl:%.2f\tPt:%.2f\tlambada:%.2f\n",vec[0],vec[1],vec[2]);
-    printf("E is %lf\n",E);
+    //printf("E is %lf\n",E);
     return E;
 }
 
@@ -241,9 +243,16 @@ int main( int argc, char** argv){
     pso_settings_t *settings = NULL;
     pso_obj_fun_t obj_fun = NULL;
 
+    //定义两个判断函数 L f
+    pso_obj_judge obj_L = NULL;
+    pso_obj_judge obj_f = NULL;
+
     initiate();//初始化变量
 
     obj_fun = pso_E;//定义被优化函数为耗能函数
+    
+    obj_L = L;//提供约束函数
+    obj_f = f;
 
     double range_lo[3] = {0, 0, 0};
     double range_hi[3] = {fImax, Ptmax, 1};//先设置为很小的值 fl Pt lambada
@@ -268,7 +277,7 @@ int main( int argc, char** argv){
     printf("====Initializing part accomplishes====\n\n");
 
     // run optimization algorithm
-    pso_solve(obj_fun, NULL, &solution, settings);
+    pso_solve(obj_fun, NULL, &solution, settings, L, f);
 
     // free the gbest buffer
     free(solution.gbest);
