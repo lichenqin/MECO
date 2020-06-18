@@ -38,7 +38,7 @@ typedef enum {true, false} boolean;
 //==============================================================
 
 double Wu;
-double Wd=10;
+double Wd;
 double d=10;
 double h1=0.99;
 double h2=0.99;
@@ -63,13 +63,19 @@ double Rd;
 
 void initiate(){
     Wu = pow(10,7);
+    //printf("Wu:%lf\n",Wu);
+    Wd = pow(10,7);
+    //printf("Wd:%lf\n",Wd);
     N0 = 174*pow(10,-13);
+    //printf("N0:%lf\n",N0);
     fc = 8*pow(10,8);
+    //printf("fc:%lf\n",fc);
     fImax = 4*pow(10,8);
+    //printf("fImax:%lf\n",fImax);
     K = pow(10,-26);
     F = 6*pow(10,9);
-    Ru = Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
-    Rd = Wd*((log(1+(PF*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));
+    Rd = Wd*((log(1+PF*pow(d,-v)*pow(fabs(h2),2)/N0))/log(2));
+    //printf("Rd:%lf\n",Rd);
 }
 
 //==============================================================
@@ -156,9 +162,11 @@ double pso_E(double *vec, int dim, void *params) {
     double fl=vec[0];
     double Pt=vec[1];
     double lamda=vec[2];
-    double Ru=Wu*((log(1+(Pt*pow(d,-v)*pow(abs(h2),2))/N0))/log(2));;
+    double Ru=Wu*((log(1+Pt*pow(d,-v)*pow(fabs(h2),2)/N0))/log(2));
     double E = alpha*I*K*lamda*pow(fl,2)+(P0+kt*Pt)*(beta1*(1-lamda)*I)/Ru+Pr*beta2*(1-lamda)/Rd;
 
+    //printf("fl:%.2f\tPt:%.2f\tlambada:%.2f\n",vec[0],vec[1],vec[2]);
+    printf("E is %lf\n",E);
     return E;
 }
 
@@ -238,7 +246,7 @@ int main( int argc, char** argv){
     obj_fun = pso_E;//定义被优化函数为耗能函数
 
     double range_lo[3] = {0, 0, 0};
-    double range_hi[3] = {1, 1, 1};//先设置为很小的值
+    double range_hi[3] = {fImax, Ptmax, 1};//先设置为很小的值 fl Pt lambada
 
     settings = pso_settings_new(3, range_lo, range_hi);//dim: 3 
     printf("Optimizing function: sphere (dim=%d, swarm size=%d)\n", settings->dim, settings->size);

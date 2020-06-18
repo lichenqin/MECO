@@ -21,7 +21,7 @@
 #include <stdio.h> // for printf
 #include <time.h> // for time()
 #include <math.h> // for cos(), pow(), sqrt() etc.
-#include <float.h> // for DBL_MAX
+#include <float.h> // for DBL_MAX   即 double_max
 #include <string.h> // for mem*
 
 #include "pso.h"
@@ -228,6 +228,8 @@ pso_settings_t *pso_settings_new(int dim, double* range_lo, double* range_hi) {
         settings->range_hi[i] = range_hi[i];
     }
 
+    printf("Initial: fl %.2f pt%.2f lambada%.2f\n",settings->range_hi[0], settings->range_hi[1], settings->range_hi[2]);
+
     settings->size = pso_calc_swarm_size(settings->dim);
     settings->print_every = 50; //这里需要更改
     settings->steps = 500;
@@ -356,7 +358,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
         }
         // update particle fitness
         fit[i] = obj_fun(pos[i], settings->dim, obj_fun_params);
-        printf("initia particle %d fit: %lf\n", i, fit[i]);
+        printf("initial particle %d fit: %lf\n", i, fit[i]);
         fit_b[i] = fit[i]; // this is also the personal best
         // update gbest??
         if (fit[i] < solution->error) {
@@ -382,7 +384,7 @@ void pso_solve(pso_obj_fun_t obj_fun, void *obj_fun_params,
         if (solution->error <= settings->goal) {
             // SOLVED!!
             if (settings->print_every)
-                printf("Goal achieved @ step %d (error=%.3e) :-)\n", step, solution->error);
+                printf("Goal achieved @ step %d (error=%.10e) :-)\n", step, solution->error);
             break;
         }
 
