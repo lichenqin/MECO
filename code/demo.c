@@ -268,7 +268,9 @@ int main( int argc, char** argv){
     // set some general PSO settings
     settings->goal = 1e-5;
     settings->size = 30;    //swarm size: 30
-    settings->nhood_strategy = PSO_NHOOD_GLOBAL;  //using global topology
+    //settings->nhood_strategy = PSO_NHOOD_GLOBAL;  //1. using global topology
+    //settings->nhood_strategy = PSO_NHOOD_RANDOM;  //2. using random neighborhood topology
+    settings->nhood_strategy = PSO_NHOOD_RING;      //3. using ring topology
     settings->nhood_size = 10;  //choose 10 neighbors
     settings->w_strategy = PSO_W_LIN_DEC;
 
